@@ -4,7 +4,7 @@ import * as dotenv from 'dotenv'
 
 dotenv.config()
 
-const port = process.env.PORT
+const port = process.env.PORT ?? 4300;
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -16,7 +16,7 @@ async function bootstrap() {
     credentials: true,
   });
 
-  await app.listen(port ?? 5647);
+  await app.listen(port);
   console.log(`Servidor de gerenciamento de conteúdo online! Porta ${port}`)
 }
 bootstrap();
