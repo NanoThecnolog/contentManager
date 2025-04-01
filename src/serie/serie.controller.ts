@@ -10,19 +10,18 @@ export class SerieController {
     create(@Body() data: any): Promise<Serie> {
         return this.serieService.create(data)
     }
-    @Get('/all')
+    @Get()
     findAll(): Promise<Serie[]> {
         return this.serieService.findAll()
     }
-    @Get('/serie/tmdbid/:id')
+    @Get('/tmdbid/:id')
     findOneByTMDBId(@Param('id') id: number): Promise<Serie | null> {
         return this.serieService.findOne(id)
     }
-    @Get('/serie/title/:name')
+    @Get('/title/:name')
     findByName(@Param('name') name: string): Promise<Serie[]> {
         return this.serieService.findByName(name)
     }
-
     @Put(':id')
     update(@Param('id') id: number, @Body() data: any): Promise<Serie | null> {
         return this.serieService.update(id, data)
