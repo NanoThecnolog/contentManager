@@ -10,15 +10,15 @@ export class MovieController {
     create(@Body() data: any): Promise<Movie> {
         return this.movieService.create(data)
     }
-    @Get('/all')
+    @Get()
     findAll(): Promise<Movie[]> {
         return this.movieService.findAll()
     }
-    @Get(':id')
+    @Get('/tmdbid/:id')
     findOne(@Param('id') id: number): Promise<Movie | null> {
         return this.movieService.findOne(id)
     }
-    @Get(':name')
+    @Get('/title/:name')
     findByName(@Param('name') name: string): Promise<Movie[]> {
         return this.movieService.findByName(name)
     }
