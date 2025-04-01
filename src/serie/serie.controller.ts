@@ -15,12 +15,25 @@ export class SerieController {
         return this.serieService.findAll()
     }
     @Get(':id')
-    findOne(@Param('id') id: number): Promise<Serie | null> {
+    findOneByTMDBId(@Param('id') id: number): Promise<Serie | null> {
         return this.serieService.findOne(id)
     }
+    @Get(':name')
+    findByName(@Param('name') name: string): Promise<Serie[]> {
+        return this.serieService.findByName(name)
+    }
+
     @Put(':id')
     update(@Param('id') id: number, @Body() data: any): Promise<Serie | null> {
         return this.serieService.update(id, data)
+    }
+    @Post(':id/season')
+    addSeason(@Param('id') id: number, @Body() data: any): Promise<Serie | null> {
+        return this.serieService.addSeason(id, data)
+    }
+    @Post(':id/season/:season/episode')
+    addEpisode(@Param('id') id: number, @Param('season') season: number, @Body() data: any): Promise<Serie | null> {
+        return this.serieService.addEpisode(id, (season - 1), data)
     }
     @Delete(':id')
     delete(@Param('id') id: number): Promise<Serie | null> {

@@ -18,6 +18,10 @@ export class MovieController {
     findOne(@Param('id') id: number): Promise<Movie | null> {
         return this.movieService.findOne(id)
     }
+    @Get(':name')
+    findByName(@Param('name') name: string): Promise<Movie[]> {
+        return this.movieService.findByName(name)
+    }
     @Put(':id')
     update(@Param('id') id: number, @Body() data: any): Promise<Movie | null> {
         return this.movieService.update(id, data)

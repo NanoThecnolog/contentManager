@@ -16,6 +16,9 @@ export class MovieService {
     async findOne(tmdbId: number): Promise<Movie | null> {
         return this.movieModel.findOne({ tmdbId }).exec()
     }
+    async findByName(name: string): Promise<Movie[]> {
+        return this.movieModel.find({ title: name }).exec()
+    }
     async update(tmdbId: number, data: any): Promise<Movie | null> {
         return this.movieModel.findOneAndUpdate({ tmdbId }, data, { new: true }).exec()
     }
