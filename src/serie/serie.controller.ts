@@ -32,7 +32,7 @@ export class SerieController {
     }
     @Post(':id/season/:season/episode')
     addEpisode(@Param('id') id: number, @Param('season') season: number, @Body() data: any): Promise<Serie | null> {
-        return this.serieService.addEpisode(id, (season - 1), data)
+        return this.serieService.addEpisode(id, season, data)
     }
     @Delete(':id')
     delete(@Param('id') id: number): Promise<Serie | null> {

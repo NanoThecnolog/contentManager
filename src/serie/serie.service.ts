@@ -34,9 +34,9 @@ export class SerieService {
         ).exec()
     }
 
-    async addEpisode(tmdbID: number, seasonIndex: number, newEpisode: any): Promise<Serie | null> {
+    async addEpisode(tmdbID: number, seasonNumber: number, newEpisode: any): Promise<Serie | null> {
         return this.serieModel.findOneAndUpdate(
-            { tmdbID, 'season._id': this.serieModel[seasonIndex]._id },
+            { tmdbID, 'season.s': seasonNumber },
             { $push: { 'season.$.episodes': newEpisode } },
             { new: true }
         ).exec()
