@@ -14,11 +14,11 @@ export class SerieController {
     findAll(): Promise<Serie[]> {
         return this.serieService.findAll()
     }
-    @Get(':id')
+    @Get('/serie/tmdbid/:id')
     findOneByTMDBId(@Param('id') id: number): Promise<Serie | null> {
         return this.serieService.findOne(id)
     }
-    @Get(':name')
+    @Get('/serie/title/:name')
     findByName(@Param('name') name: string): Promise<Serie[]> {
         return this.serieService.findByName(name)
     }
