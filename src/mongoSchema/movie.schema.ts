@@ -11,7 +11,7 @@ export class Movie extends Document {
     tmdbId: number;
     @Prop({ required: true })
     title: string;
-    @Prop({ required: true })
+    @Prop({ default: "" })
     subtitle: string;
     @Prop({ required: true })
     description: string;
