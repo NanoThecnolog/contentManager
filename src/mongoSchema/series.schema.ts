@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Season, SeasonSchema } from "./season.schema";
-import { Document } from "mongoose";
+import { Document, Model } from "mongoose";
 
 @Schema()
 export class Serie extends Document {
@@ -22,6 +22,15 @@ export class Serie extends Document {
     faixa: string;
     @Prop({ type: [SeasonSchema], default: [] })
     season: Season[]
+    @Prop({ required: true, default: 1 })
+    index: number;
 
 }
 export const SerieSchema = SchemaFactory.createForClass(Serie)
+
+SerieSchema.pre<Serie>("save", async function (next) {
+    const Model = this.constructor as Model<Serie>;
+    const lastSerie = await Model.findOne().sort({ index: -1 });
+    this.index = lastSerie ? lastSerie.index + 1 : 1;
+    next();
+});
