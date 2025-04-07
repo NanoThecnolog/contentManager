@@ -16,7 +16,7 @@ import { TrailerModule } from './trailer/trailer.module';
     MovieModule,
     TrailerModule
   ],
-  controllers: [AppController, TrailerController],
-  providers: [AppService, TrailerService],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule { }

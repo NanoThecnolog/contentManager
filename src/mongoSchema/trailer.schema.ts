@@ -5,7 +5,7 @@ export type VideoDocument = Video & Document;
 @Schema()
 export class Video {
     @Prop({ required: true })
-    id: string;
+    id: number;
 
     @Prop({ required: true })
     path: string;
