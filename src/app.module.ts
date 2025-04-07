@@ -5,14 +5,18 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Serie, SerieSchema } from './mongoSchema/series.schema';
 import { SerieModule } from './serie/serie.module';
 import { MovieModule } from './movie/movie.module';
+import { TrailerService } from './trailer/trailer.service';
+import { TrailerController } from './trailer/trailer.controller';
+import { TrailerModule } from './trailer/trailer.module';
 
 @Module({
   imports: [
     MongooseModule.forRoot('mongodb://localhost:27017/filmes_series'),
     SerieModule,
-    MovieModule
+    MovieModule,
+    TrailerModule
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [AppController, TrailerController],
+  providers: [AppService, TrailerService],
 })
 export class AppModule { }
