@@ -74,7 +74,7 @@ export class TrailerController {
             'Content-Type': 'video/x-matroska',
         })
 
-        return res.sendFile(filePath)
+        file.pipe(res)
     }
 
 }
