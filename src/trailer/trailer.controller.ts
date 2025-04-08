@@ -3,7 +3,7 @@ import { TrailerService } from './trailer.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { CreateVideoDTO } from 'src/dto/create-video.dto';
-import { extname, join } from 'path';
+import { basename, extname, join } from 'path';
 import { createReadStream, existsSync, statSync } from 'fs';
 import { Request, Response } from 'express';
 
@@ -49,13 +49,15 @@ export class TrailerController {
         if (!existsSync(filePath)) throw new NotFoundException(`Arquivo de vídeo não encontrado.`)
 
         const stat = statSync(filePath)
+        const fileName = basename(filePath)
         const fileSize = stat.size
         const range = req.headers.range
 
         if (!range) {
             res.writeHead(200, {
                 'Content-Length': fileSize,
-                'Content-Type': 'video/x-matroska'
+                'Content-Type': 'video/x-matroska',
+                'Content-Disposition': `inline; filename="${fileName}"`,
             })
             createReadStream(filePath).pipe(res)
             return;
@@ -73,6 +75,7 @@ export class TrailerController {
             'Accept-Ranges': 'bytes',
             'Content-Length': chunkSize,
             'Content-Type': 'video/x-matroska',
+            'Content-Disposition': `inline; filename="${fileName}"`,
         })
 
         file.pipe(res)
