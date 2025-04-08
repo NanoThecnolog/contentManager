@@ -44,7 +44,7 @@ export class TrailerController {
         const video = await this.videoService.findById(id)
         if (!video) throw new NotFoundException('Vídeo não encontrado')
 
-        const filePath = join(process.cwd(), video.path)
+        const filePath = video.path
         if (!existsSync(filePath)) throw new NotFoundException('Arquivo de vídeo não encontrado.')
 
         const stat = statSync(filePath)
