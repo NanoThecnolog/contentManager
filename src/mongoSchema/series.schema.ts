@@ -24,6 +24,8 @@ export class Serie extends Document {
     season: Season[]
     @Prop({ required: true, default: 1 })
     index: number;
+    @Prop()
+    news?: string
 
 }
 export const SerieSchema = SchemaFactory.createForClass(Serie)

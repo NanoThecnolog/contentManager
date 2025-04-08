@@ -59,8 +59,7 @@ export class TrailerController {
                 'Content-Type': 'video/x-matroska',
                 'Content-Disposition': `inline; filename="${fileName}"`,
             })
-            createReadStream(filePath).pipe(res)
-            return;
+            return createReadStream(filePath).pipe(res)
         }
 
         const parts = range.replace(/bytes=/, '').split('-')
@@ -78,7 +77,7 @@ export class TrailerController {
             'Content-Disposition': `inline; filename="${fileName}"`,
         })
 
-        file.pipe(res)
+        return file.pipe(res)
     }
 
 }

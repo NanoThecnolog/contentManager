@@ -25,6 +25,8 @@ export class Movie extends Document {
     genero: string[];
     @Prop({ required: true, default: 1 })
     index: number;
+    @Prop()
+    news?: string;
 }
 export const MovieSchema = SchemaFactory.createForClass(Movie);
 
