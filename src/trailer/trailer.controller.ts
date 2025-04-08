@@ -16,8 +16,8 @@ export class TrailerController {
         storage: diskStorage({
             destination: './uploads/videos',
             filename: (req, file, cb) => {
-                const uniqueName = `${Date.now()}-${Math.round(Math.random() * 1e9)}${extname(file.originalname)}`
-                cb(null, uniqueName)
+                const originalName = file.originalname
+                cb(null, originalName)
             }
         }),
         fileFilter: (req, file, cb) => {
