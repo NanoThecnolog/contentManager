@@ -31,7 +31,7 @@ export class TrailerController {
         }
     }))
     async uploadFile(@UploadedFile() file: Express.Multer.File, @Body() body: CreateVideoDTO) {
-        const filePath = file.path
+        const filePath = join(process.cwd(), 'uploads', 'trailer', `${file.originalname}`)
         const saved = await this.videoService.saveVideo(body.id, filePath)
         return {
             message: 'Upload bem-sucedido',
