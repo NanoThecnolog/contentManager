@@ -25,6 +25,9 @@ export class TrailerController {
                 return cb(new Error('Only .mkv files are allowed!'), false)
             }
             cb(null, true)
+        },
+        limits: {
+            fileSize: 100 * 1024 * 1024
         }
     }))
     async uploadFile(@UploadedFile() file: Express.Multer.File, @Body() body: CreateVideoDTO) {
