@@ -31,7 +31,7 @@ export class TrailerController {
         }
     }))
     async uploadFile(@UploadedFile() file: Express.Multer.File, @Body() body: CreateVideoDTO) {
-        const filePath = join(process.cwd(), 'uploads', 'trailer', `${file.originalname}`)
+        const filePath = join(process.cwd(), 'uploads', 'videos', `${file.originalname}`)
         const saved = await this.videoService.saveVideo(body.id, filePath)
         return {
             message: 'Upload bem-sucedido',
@@ -45,7 +45,8 @@ export class TrailerController {
         if (!video) throw new NotFoundException('Vídeo não encontrado')
 
         const filePath = video.path
-        if (!existsSync(filePath)) throw new NotFoundException('Arquivo de vídeo não encontrado.')
+        console.log("Caminho do arquivo buscado", filePath)
+        if (!existsSync(filePath)) throw new NotFoundException(`Arquivo de vídeo não encontrado.`)
 
         const stat = statSync(filePath)
         const fileSize = stat.size
