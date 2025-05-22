@@ -6,6 +6,7 @@ import { CreateVideoDTO } from 'src/dto/create-video.dto';
 import { basename, extname, join } from 'path';
 import { createReadStream, existsSync, statSync } from 'fs';
 import { Request, Response } from 'express';
+import { Public } from 'src/decorators/public.decorator';
 
 @Controller('trailer')
 export class TrailerController {
@@ -38,7 +39,7 @@ export class TrailerController {
             video: saved
         }
     }
-
+    @Public()
     @Get(':id')
     async streamVideo(@Param('id') id: number, @Req() req: Request, @Res() res: Response) {
         const video = await this.videoService.findById(id)
