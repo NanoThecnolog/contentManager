@@ -1,13 +1,14 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import * as dotenv from 'dotenv'
 import { json, urlencoded } from 'express';
+import * as dotenv from 'dotenv'
 
 dotenv.config()
 
-const port = process.env.PORT ?? 4300;
+
 
 async function bootstrap() {
+  const port = process.env.PORT ?? 4300;
   const app = await NestFactory.create(AppModule);
 
   app.use(json({ limit: '100mb' }))
