@@ -3,7 +3,7 @@ import { TrailerService } from './trailer.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { CreateVideoDTO } from 'src/dto/create-video.dto';
-import { basename, extname, join } from 'path';
+import { basename, join } from 'path';
 import { createReadStream, existsSync, statSync } from 'fs';
 import { Request, Response } from 'express';
 import { Public } from 'src/decorators/public.decorator';

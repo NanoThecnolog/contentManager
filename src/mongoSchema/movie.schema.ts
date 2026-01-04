@@ -27,6 +27,12 @@ export class Movie extends Document {
     index: number;
     @Prop()
     news?: string;
+    @Prop({
+        enum: ['Dub', 'Leg'],
+        required: false,
+        default: 'Dub'
+    })
+    lang?: 'Dub' | 'Leg'
 }
 export const MovieSchema = SchemaFactory.createForClass(Movie);
 

@@ -7,7 +7,7 @@ import { Movie } from 'src/mongoSchema/movie.schema';
 export class MovieService {
     constructor(@InjectModel(Movie.name) private movieModel: Model<Movie>) { }
 
-    async create(data: any): Promise<Movie> {
+    async create(data: Partial<Movie>): Promise<Movie> {
         return this.movieModel.create(data)
     }
     async findAll(): Promise<Movie[]> {
@@ -19,8 +19,8 @@ export class MovieService {
     async findByName(name: string): Promise<Movie[]> {
         return this.movieModel.find({ title: name }).exec()
     }
-    async update(tmdbId: number, data: any): Promise<Movie | null> {
-        return this.movieModel.findOneAndUpdate({ tmdbId }, data, { new: true }).exec()
+    async update(tmdbId: number, data: Partial<Movie>): Promise<Movie | null> {
+        return this.movieModel.findOneAndUpdate({ tmdbId }, data, { new: true, runValidators: true }).exec()
     }
     async delete(tmdbId: number): Promise<Movie | null> {
         return this.movieModel.findOneAndDelete({ tmdbId }).exec()
