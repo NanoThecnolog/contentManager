@@ -8,6 +8,7 @@ import { TrailerModule } from './trailer/trailer.module';
 import { APP_GUARD } from '@nestjs/core';
 import { ApiKeyGuard } from './auth/api-key.guard';
 import { ConfigModule } from '@nestjs/config';
+import { MapModule } from './map/map.module';
 
 @Module({
   imports: [
@@ -15,7 +16,8 @@ import { ConfigModule } from '@nestjs/config';
     SerieModule,
     MovieModule,
     TrailerModule,
-    ConfigModule.forRoot({ isGlobal: true })
+    ConfigModule.forRoot({ isGlobal: true }),
+    MapModule
   ],
   controllers: [AppController],
   providers: [AppService,
