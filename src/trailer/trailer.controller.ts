@@ -22,7 +22,7 @@ export class TrailerController {
             }
         }),
         fileFilter: (req, file, cb) => {
-            if (file.mimetype !== 'video/x-matroska') {
+            if (file.mimetype !== 'video/x-matroska' && file.mimetype !== 'video/matroska') {
                 return cb(new Error('Only .mkv files are allowed!'), false)
             }
             cb(null, true)
