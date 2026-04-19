@@ -22,13 +22,14 @@ export class TrailerController {
             }
         }),
         fileFilter: (req, file, cb) => {
-            if (file.mimetype !== 'video/x-matroska' && file.mimetype !== 'video/matroska') {
+            const allowed = ['video/x-matroska', 'video/matroska']
+            if (!allowed.includes(file.mimetype)) {
                 return cb(new Error('Only .mkv files are allowed!'), false)
             }
             cb(null, true)
         },
         limits: {
-            fileSize: 100 * 1024 * 1024
+            fileSize: 300 * 1024 * 1024 //300mb
         }
     }))
     async uploadFile(@UploadedFile() file: Express.Multer.File, @Body() body: CreateVideoDTO) {
@@ -39,6 +40,7 @@ export class TrailerController {
             video: saved
         }
     }
+
     @Public()
     @Get(':id')
     async streamVideo(@Param('id') id: number, @Req() req: Request, @Res() res: Response) {
