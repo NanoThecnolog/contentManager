@@ -1,6 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
 import { MovieService } from './movie.service';
 import { Movie } from 'src/mongoSchema/movie.schema';
+import { DriveMovie } from 'src/@types/DriveMovies';
 
 @Controller('movie')
 export class MovieController {
@@ -29,5 +30,10 @@ export class MovieController {
     @Delete(':id')
     delete(@Param('id') id: number): Promise<Movie | null> {
         return this.movieService.delete(id)
+    }
+
+    @Get('verify')
+    verifyMovieLinks(): Promise<{ count: number, result: DriveMovie[] }> {
+        return this.movieService.verifyMovieLinks()
     }
 }

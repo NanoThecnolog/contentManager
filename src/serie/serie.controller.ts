@@ -38,4 +38,9 @@ export class SerieController {
     delete(@Param('id') id: number): Promise<Serie | null> {
         return this.serieService.delete(id)
     }
+
+    @Get('verify')
+    verifyEpisodeLinks() {
+        return this.serieService.verifyEpisodes()
+    }
 }

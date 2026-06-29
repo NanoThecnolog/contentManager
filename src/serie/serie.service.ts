@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { DriveEpisodes, DriveSeries } from 'src/@types/DriveSeries';
 import { Serie } from 'src/mongoSchema/series.schema';
 
 @Injectable()
@@ -44,5 +45,36 @@ export class SerieService {
 
     async delete(tmdbID: number): Promise<Serie | null> {
         return this.serieModel.findOneAndDelete({ tmdbID }).exec();
+    }
+
+    async verifyEpisodes() {
+        const series = await this.findAll()
+
+        const driveDomain = "drive.google.com"
+
+        const driveSeries = series
+            .map(serie => {
+                const episodes = serie.season.flatMap((season): DriveEpisodes[] => {
+                    return season.episodes
+                        .filter((episode) => episode.src?.includes(driveDomain))
+                        .map((episode): DriveEpisodes => ({
+                            season: season.s,
+                            episode: episode.ep,
+                            src: episode.src
+                        }))
+                })
+                if (!episodes.length) return null
+
+                return {
+                    title: serie.title,
+                    subtitle: serie.subtitle ?? "",
+                    tmdbId: serie.tmdbID,
+                    episodes,
+                    count: episodes.length
+                }
+            }).filter((serie): serie is DriveSeries => serie !== null)
+
+        return { count: driveSeries.length, result: driveSeries }
+
     }
 }

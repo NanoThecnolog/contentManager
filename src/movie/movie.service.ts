@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { DriveMovie } from 'src/@types/DriveMovies';
 import { Movie } from 'src/mongoSchema/movie.schema';
+
+
 
 @Injectable()
 export class MovieService {
@@ -24,5 +27,25 @@ export class MovieService {
     }
     async delete(tmdbId: number): Promise<Movie | null> {
         return this.movieModel.findOneAndDelete({ tmdbId }).exec()
+    }
+
+    async verifyMovieLinks(): Promise<{ count: number, result: DriveMovie[] }> {
+        const driveDomain = "drive.google.com"
+        const movies = await this.findAll()
+
+        let driveMovies: DriveMovie[] = []
+
+        for (const movie of movies) {
+            if (!movie.src.includes(driveDomain)) continue
+
+            driveMovies.push({
+                title: movie.title ?? "",
+                subtitle: movie.subtitle ?? "",
+                src: movie.src ?? "",
+                tmdbId: movie.tmdbId ?? 0
+            })
+        }
+
+        return { count: driveMovies.length, result: driveMovies }
     }
 }
