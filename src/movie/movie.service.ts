@@ -4,7 +4,9 @@ import { Model } from 'mongoose';
 import { DriveMovie } from 'src/@types/DriveMovies';
 import { Movie } from 'src/mongoSchema/movie.schema';
 
-
+const escapeRegex = (value: string) => {
+    return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
 
 @Injectable()
 export class MovieService {
@@ -20,7 +22,12 @@ export class MovieService {
         return this.movieModel.findOne({ tmdbId }).exec()
     }
     async findByName(name: string): Promise<Movie[]> {
-        return this.movieModel.find({ title: name }).exec()
+        return this.movieModel.find({
+            title: {
+                $regex: `${escapeRegex(name)}$`,
+                $options: '1'
+            }
+        }).exec();
     }
     async update(tmdbId: number, data: Partial<Movie>): Promise<Movie | null> {
         return this.movieModel.findOneAndUpdate({ tmdbId }, data, { new: true, runValidators: true }).exec()
