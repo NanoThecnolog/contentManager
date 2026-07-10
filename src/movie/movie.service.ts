@@ -25,7 +25,7 @@ export class MovieService {
         return this.movieModel.find({
             title: {
                 $regex: `${escapeRegex(name)}$`,
-                $options: '1'
+                $options: 'i'
             }
         }).exec();
     }
