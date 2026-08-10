@@ -6,8 +6,9 @@ import {
   Param,
   Post,
   Put,
+  Query,
 } from '@nestjs/common';
-import { SerieService } from './serie.service';
+import { LatestEpisode, SerieService } from './serie.service';
 import { Serie } from 'src/mongoSchema/series.schema';
 import { SerieTmdbResponse, SerieTmdbService } from './serie-tmdb.service';
 
@@ -25,6 +26,10 @@ export class SerieController {
   @Get()
   findAll(): Promise<Serie[]> {
     return this.serieService.findAll();
+  }
+  @Get('/latest-episodes')
+  findLatestEpisodes(@Query('limit') limit?: string): Promise<LatestEpisode[]> {
+    return this.serieService.findLatestEpisodes(Number(limit) || 12);
   }
   @Get('/tmdb')
   findAllTmdb(): Promise<SerieTmdbResponse> {

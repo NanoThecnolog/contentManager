@@ -3,14 +3,17 @@ import { Document } from 'mongoose';
 
 @Schema()
 export class Episode extends Document {
-    @Prop({ required: true })
-    ep: number;
+  @Prop({ required: true })
+  ep: number;
 
-    @Prop({ required: true })
-    src: string;
+  @Prop({ required: true })
+  src: string;
 
-    @Prop({ required: true })
-    duration: string;
+  @Prop({ required: true })
+  duration: string;
+
+  @Prop()
+  createdAt?: Date;
 }
 
 export const EpisodeSchema = SchemaFactory.createForClass(Episode);

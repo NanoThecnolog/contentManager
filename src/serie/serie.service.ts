@@ -4,77 +4,189 @@ import { Model } from 'mongoose';
 import { DriveEpisodes, DriveSeries } from 'src/@types/DriveSeries';
 import { Serie } from 'src/mongoSchema/series.schema';
 
+export interface LatestEpisode {
+  tmdbID: number;
+  seasonNumber: number;
+  episodeNumber: number;
+  language: string;
+  addedAt: Date;
+}
+
 @Injectable()
 export class SerieService {
-    constructor(@InjectModel(Serie.name) private serieModel: Model<Serie>) { }
+  constructor(@InjectModel(Serie.name) private serieModel: Model<Serie>) {}
 
-    async create(data: any): Promise<Serie> {
-        return this.serieModel.create(data)
-    }
+  async create(data: any): Promise<Serie> {
+    return this.serieModel.create(this.addCreatedAtToNewEpisodes(data));
+  }
 
-    async findAll(): Promise<Serie[]> {
-        return this.serieModel.find().exec()
-    }
+  async findAll(): Promise<Serie[]> {
+    return this.serieModel.find().exec();
+  }
 
-    async findOne(tmdbID: number): Promise<Serie | null> {
-        return this.serieModel.findOne({ tmdbID }).exec()
-    }
-    async findByName(name: string): Promise<Serie[]> {
-        return this.serieModel.find({ title: name }).exec()
-    }
+  async findOne(tmdbID: number): Promise<Serie | null> {
+    return this.serieModel.findOne({ tmdbID }).exec();
+  }
+  async findLatestEpisodes(limit = 12): Promise<LatestEpisode[]> {
+    const safeLimit = Math.min(Math.max(limit, 1), 30);
 
-    async update(tmdbID: number, data: any): Promise<Serie | null> {
-        return this.serieModel.findOneAndUpdate({ tmdbID }, data, { new: true }).exec()
-    }
+    return this.serieModel
+      .aggregate<LatestEpisode>([
+        { $unwind: '$season' },
+        { $unwind: '$season.episodes' },
+        {
+          $set: {
+            episodeAddedAt: {
+              $ifNull: [
+                '$season.episodes.createdAt',
+                {
+                  $convert: {
+                    input: '$season.episodes._id',
+                    to: 'date',
+                    onError: null,
+                    onNull: null,
+                  },
+                },
+              ],
+            },
+          },
+        },
+        { $match: { episodeAddedAt: { $ne: null } } },
+        { $sort: { episodeAddedAt: -1 } },
+        { $limit: safeLimit },
+        {
+          $project: {
+            _id: 0,
+            tmdbID: 1,
+            seasonNumber: '$season.s',
+            episodeNumber: '$season.episodes.ep',
+            language: '$season.lang',
+            addedAt: '$episodeAddedAt',
+          },
+        },
+      ])
+      .exec();
+  }
+  async findByName(name: string): Promise<Serie[]> {
+    return this.serieModel.find({ title: name }).exec();
+  }
 
-    async addSeason(tmdbID: number, newSeason: any): Promise<Serie | null> {
-        return this.serieModel.findOneAndUpdate(
-            { tmdbID },
-            { $push: { season: newSeason } },
-            { new: true }
-        ).exec()
-    }
+  async update(tmdbID: number, data: any): Promise<Serie | null> {
+    const currentSerie = await this.findOne(tmdbID);
+    const preparedData = this.addCreatedAtToNewEpisodes(data, currentSerie);
 
-    async addEpisode(tmdbID: number, seasonNumber: number, newEpisode: any): Promise<Serie | null> {
-        return this.serieModel.findOneAndUpdate(
-            { tmdbID, 'season.s': seasonNumber },
-            { $push: { 'season.$.episodes': newEpisode } },
-            { new: true }
-        ).exec()
-    }
+    return this.serieModel
+      .findOneAndUpdate({ tmdbID }, preparedData, { new: true })
+      .exec();
+  }
 
-    async delete(tmdbID: number): Promise<Serie | null> {
-        return this.serieModel.findOneAndDelete({ tmdbID }).exec();
-    }
+  async addSeason(tmdbID: number, newSeason: any): Promise<Serie | null> {
+    const preparedSeason = {
+      ...newSeason,
+      episodes: (newSeason.episodes ?? []).map((episode: any) => ({
+        ...episode,
+        createdAt: episode.createdAt ?? new Date(),
+      })),
+    };
 
-    async verifyEpisodes() {
-        const series = await this.findAll()
+    return this.serieModel
+      .findOneAndUpdate(
+        { tmdbID },
+        { $push: { season: preparedSeason } },
+        { new: true },
+      )
+      .exec();
+  }
 
-        const driveDomain = "drive.google.com"
+  async addEpisode(
+    tmdbID: number,
+    seasonNumber: number,
+    newEpisode: any,
+  ): Promise<Serie | null> {
+    return this.serieModel
+      .findOneAndUpdate(
+        { tmdbID, 'season.s': seasonNumber },
+        {
+          $push: {
+            'season.$.episodes': {
+              ...newEpisode,
+              createdAt: newEpisode.createdAt ?? new Date(),
+            },
+          },
+        },
+        { new: true },
+      )
+      .exec();
+  }
 
-        const driveSeries = series
-            .map(serie => {
-                const episodes = serie.season.flatMap((season): DriveEpisodes[] => {
-                    return season.episodes
-                        .filter((episode) => episode.src?.includes(driveDomain))
-                        .map((episode): DriveEpisodes => ({
-                            season: season.s,
-                            episode: episode.ep,
-                            src: episode.src
-                        }))
-                })
-                if (!episodes.length) return null
+  async delete(tmdbID: number): Promise<Serie | null> {
+    return this.serieModel.findOneAndDelete({ tmdbID }).exec();
+  }
 
-                return {
-                    title: serie.title,
-                    subtitle: serie.subtitle ?? "",
-                    tmdbId: serie.tmdbID,
-                    episodes,
-                    count: episodes.length
-                }
-            }).filter((serie): serie is DriveSeries => serie !== null)
+  private addCreatedAtToNewEpisodes(
+    data: any,
+    currentSerie?: Serie | null,
+  ): any {
+    const existingEpisodes = new Map<string, Date | undefined>();
 
-        return { count: driveSeries.length, result: driveSeries }
+    currentSerie?.season.forEach((season) => {
+      season.episodes.forEach((episode) => {
+        existingEpisodes.set(`${season.s}:${episode.ep}`, episode.createdAt);
+      });
+    });
 
-    }
+    return {
+      ...data,
+      season: (data.season ?? []).map((season: any) => ({
+        ...season,
+        episodes: (season.episodes ?? []).map((episode: any) => {
+          const key = `${season.s}:${episode.ep}`;
+          const alreadyExists = existingEpisodes.has(key);
+          const existingCreatedAt = existingEpisodes.get(key);
+
+          return {
+            ...episode,
+            ...(existingCreatedAt
+              ? { createdAt: existingCreatedAt }
+              : alreadyExists
+                ? {}
+                : { createdAt: episode.createdAt ?? new Date() }),
+          };
+        }),
+      })),
+    };
+  }
+
+  async verifyEpisodes() {
+    const series = await this.findAll();
+
+    const driveDomain = 'drive.google.com';
+
+    const driveSeries = series
+      .map((serie) => {
+        const episodes = serie.season.flatMap((season): DriveEpisodes[] => {
+          return season.episodes
+            .filter((episode) => episode.src?.includes(driveDomain))
+            .map(
+              (episode): DriveEpisodes => ({
+                season: season.s,
+                episode: episode.ep,
+                src: episode.src,
+              }),
+            );
+        });
+        if (!episodes.length) return null;
+
+        return {
+          title: serie.title,
+          subtitle: serie.subtitle ?? '',
+          tmdbId: serie.tmdbID,
+          episodes,
+          count: episodes.length,
+        };
+      })
+      .filter((serie): serie is DriveSeries => serie !== null);
+
+    return { count: driveSeries.length, result: driveSeries };
+  }
 }
