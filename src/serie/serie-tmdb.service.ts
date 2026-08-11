@@ -2,6 +2,7 @@ import { Injectable, ServiceUnavailableException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { hiddenSeriesTmdbIds } from 'src/config/hidden-series.config';
 import { Serie } from 'src/mongoSchema/series.schema';
 
 type TmdbSerie = Record<string, unknown> & { id: number };
@@ -100,7 +101,14 @@ export class SerieTmdbService {
         .exec();
 
       catalogIds = Array.from(
-        new Set(series.map((serie) => serie.tmdbID).filter(Number.isFinite)),
+        new Set(
+          series
+            .map((serie) => serie.tmdbID)
+            .filter(
+              (tmdbID) =>
+                Number.isFinite(tmdbID) && !hiddenSeriesTmdbIds.has(tmdbID),
+            ),
+        ),
       );
     } catch {
       throw new ServiceUnavailableException({

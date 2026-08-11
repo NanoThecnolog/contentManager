@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { DriveEpisodes, DriveSeries } from 'src/@types/DriveSeries';
+import { hiddenSeriesTmdbIds } from 'src/config/hidden-series.config';
 import { Serie } from 'src/mongoSchema/series.schema';
 
 export interface LatestEpisode {
@@ -21,7 +22,9 @@ export class SerieService {
   }
 
   async findAll(): Promise<Serie[]> {
-    return this.serieModel.find().exec();
+    const series = await this.serieModel.find().exec();
+
+    return series.filter((serie) => !hiddenSeriesTmdbIds.has(serie.tmdbID));
   }
 
   async findOne(tmdbID: number): Promise<Serie | null> {
@@ -158,7 +161,7 @@ export class SerieService {
   }
 
   async verifyEpisodes() {
-    const series = await this.findAll();
+    const series = await this.serieModel.find().exec();
 
     const driveDomain = 'drive.google.com';
 
