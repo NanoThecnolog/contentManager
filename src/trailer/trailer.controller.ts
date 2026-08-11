@@ -1,4 +1,16 @@
-import { Body, Controller, Get, NotFoundException, Param, Post, Req, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  NotFoundException,
+  Param,
+  ParseIntPipe,
+  Post,
+  Req,
+  Res,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
 import { TrailerService } from './trailer.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -7,80 +19,126 @@ import { basename, join } from 'path';
 import { createReadStream, existsSync, statSync } from 'fs';
 import { Request, Response } from 'express';
 import { Public } from 'src/decorators/public.decorator';
+import {
+  ApiBody,
+  ApiConsumes,
+  ApiOperation,
+  ApiParam,
+  ApiSecurity,
+  ApiTags,
+} from '@nestjs/swagger';
 
+@ApiTags('Trailers')
+@ApiSecurity('api-key')
 @Controller('trailer')
 export class TrailerController {
-    constructor(private readonly videoService: TrailerService) { }
+  constructor(private readonly videoService: TrailerService) {}
 
-    @Post('upload')
-    @UseInterceptors(FileInterceptor('file', {
-        storage: diskStorage({
-            destination: './uploads/videos',
-            filename: (req, file, cb) => {
-                const originalName = file.originalname
-                cb(null, originalName)
-            }
-        }),
-        fileFilter: (req, file, cb) => {
-            const allowed = ['video/x-matroska', 'video/matroska']
-            if (!allowed.includes(file.mimetype)) {
-                return cb(new Error('Only .mkv files are allowed!'), false)
-            }
-            cb(null, true)
+  @Post('upload')
+  @ApiOperation({ summary: 'Enviar e registrar um trailer em vídeo' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['id', 'file'],
+      properties: {
+        id: { type: 'integer', description: 'Identificador do conteúdo.' },
+        file: { type: 'string', format: 'binary' },
+      },
+    },
+  })
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './uploads/videos',
+        filename: (req, file, cb) => {
+          const originalName = file.originalname;
+          cb(null, originalName);
         },
-        limits: {
-            fileSize: 300 * 1024 * 1024 //300mb
+      }),
+      fileFilter: (req, file, cb) => {
+        const allowed = ['video/x-matroska', 'video/matroska'];
+        if (!allowed.includes(file.mimetype)) {
+          return cb(new Error('Only .mkv files are allowed!'), false);
         }
-    }))
-    async uploadFile(@UploadedFile() file: Express.Multer.File, @Body() body: CreateVideoDTO) {
-        const filePath = join(process.cwd(), 'uploads', 'videos', `${file.originalname}`)
-        const saved = await this.videoService.saveVideo(body.id, filePath)
-        return {
-            message: 'Upload bem-sucedido',
-            video: saved
-        }
+        cb(null, true);
+      },
+      limits: {
+        fileSize: 300 * 1024 * 1024, //300mb
+      },
+    }),
+  )
+  async uploadFile(
+    @UploadedFile() file: Express.Multer.File,
+    @Body() body: CreateVideoDTO,
+  ) {
+    const filePath = join(
+      process.cwd(),
+      'uploads',
+      'videos',
+      `${file.originalname}`,
+    );
+    const saved = await this.videoService.saveVideo(body.id, filePath);
+    return {
+      message: 'Upload bem-sucedido',
+      video: saved,
+    };
+  }
+
+  @Public()
+  @Get(':id')
+  @ApiOperation({
+    summary: 'Transmitir um trailer',
+    description: 'Suporta requisições parciais por meio do header Range.',
+    security: [],
+  })
+  @ApiParam({
+    name: 'id',
+    type: Number,
+    description: 'Identificador do trailer.',
+  })
+  async streamVideo(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: Request,
+    @Res() res: Response,
+  ) {
+    const video = await this.videoService.findById(id);
+    if (!video) throw new NotFoundException('Vídeo não encontrado');
+
+    const filePath = video.path;
+    console.log('Caminho do arquivo buscado', filePath);
+    if (!existsSync(filePath))
+      throw new NotFoundException(`Arquivo de vídeo não encontrado.`);
+
+    const stat = statSync(filePath);
+    const fileName = basename(filePath);
+    const fileSize = stat.size;
+    const range = req.headers.range;
+
+    if (!range) {
+      res.writeHead(200, {
+        'Content-Length': fileSize,
+        'Content-Type': 'video/x-matroska',
+        'Content-Disposition': `inline; filename="${fileName}"`,
+      });
+      return createReadStream(filePath).pipe(res);
     }
 
-    @Public()
-    @Get(':id')
-    async streamVideo(@Param('id') id: number, @Req() req: Request, @Res() res: Response) {
-        const video = await this.videoService.findById(id)
-        if (!video) throw new NotFoundException('Vídeo não encontrado')
+    const parts = range.replace(/bytes=/, '').split('-');
+    const start = parseInt(parts[0], 10);
+    const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
 
-        const filePath = video.path
-        console.log("Caminho do arquivo buscado", filePath)
-        if (!existsSync(filePath)) throw new NotFoundException(`Arquivo de vídeo não encontrado.`)
+    const chunkSize = end - start + 1;
+    const file = createReadStream(filePath, { start, end });
 
-        const stat = statSync(filePath)
-        const fileName = basename(filePath)
-        const fileSize = stat.size
-        const range = req.headers.range
+    res.writeHead(206, {
+      'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+      'Accept-Ranges': 'bytes',
+      'Content-Length': chunkSize,
+      'Content-Type': 'video/x-matroska',
+      'Content-Disposition': `inline; filename="${fileName}"`,
+    });
 
-        if (!range) {
-            res.writeHead(200, {
-                'Content-Length': fileSize,
-                'Content-Type': 'video/x-matroska',
-                'Content-Disposition': `inline; filename="${fileName}"`,
-            })
-            return createReadStream(filePath).pipe(res)
-        }
-
-        const parts = range.replace(/bytes=/, '').split('-')
-        const start = parseInt(parts[0], 10)
-        const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1
-
-        const chunkSize = end - start + 1
-        const file = createReadStream(filePath, { start, end })
-
-        res.writeHead(206, {
-            'Content-Range': `bytes ${start}-${end}/${fileSize}`,
-            'Accept-Ranges': 'bytes',
-            'Content-Length': chunkSize,
-            'Content-Type': 'video/x-matroska',
-            'Content-Disposition': `inline; filename="${fileName}"`,
-        })
-
-        return file.pipe(res)
-    }
-
+    return file.pipe(res);
+  }
 }

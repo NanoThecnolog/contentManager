@@ -1,3 +1,8 @@
+import { ApiProperty } from '@nestjs/swagger';
+
 export class CreateVideoDTO {
-    id: number
+  @ApiProperty({
+    description: 'Identificador do conteúdo associado ao trailer.',
+  })
+  id: number;
 }

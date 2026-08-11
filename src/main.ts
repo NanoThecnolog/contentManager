@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { json, urlencoded } from 'express';
 import * as dotenv from 'dotenv';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 dotenv.config();
 
@@ -59,6 +60,29 @@ async function bootstrap() {
     allowedHeaders: ['Content-Type', 'Authorization', 'key', 'Accept'],
     credentials: true,
     maxAge: 86400,
+  });
+
+  const swaggerConfig = new DocumentBuilder()
+    .setTitle('Flixnext Content Service')
+    .setDescription(
+      'API interna responsável pelo catálogo de filmes e séries, integração com o TMDB e gerenciamento de trailers.',
+    )
+    .setVersion('1.0')
+    .addApiKey(
+      {
+        type: 'apiKey',
+        name: 'key',
+        in: 'header',
+        description: 'Chave de acesso entre os serviços Flixnext.',
+      },
+      'api-key',
+    )
+    .build();
+
+  const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
+  SwaggerModule.setup('docs', app, swaggerDocument, {
+    customSiteTitle: 'Flixnext Content Service | API',
+    swaggerOptions: { persistAuthorization: true },
   });
 
   await app.listen(port);
