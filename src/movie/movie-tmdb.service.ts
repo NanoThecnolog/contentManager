@@ -206,7 +206,10 @@ export class MovieTmdbService {
     metrics.tmdbRequests += 1;
 
     try {
-      const response = await fetch(`https://api.themoviedb.org/3/movie/${id}`, {
+      const url = new URL(`https://api.themoviedb.org/3/movie/${id}`);
+      url.searchParams.set('language', 'pt-BR');
+
+      const response = await fetch(url, {
         headers: {
           accept: 'application/json',
           Authorization: `Bearer ${token}`,
