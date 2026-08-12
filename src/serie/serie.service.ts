@@ -130,33 +130,68 @@ export class SerieService {
     data: any,
     currentSerie?: Serie | null,
   ): any {
-    const existingEpisodes = new Map<string, Date | undefined>();
-
-    currentSerie?.season.forEach((season) => {
-      season.episodes.forEach((episode) => {
-        existingEpisodes.set(`${season.s}:${episode.ep}`, episode.createdAt);
-      });
-    });
+    const existingSeasons = new Map(
+      currentSerie?.season.map((season) => [season.s, season]) ?? [],
+    );
 
     return {
       ...data,
-      season: (data.season ?? []).map((season: any) => ({
-        ...season,
-        episodes: (season.episodes ?? []).map((episode: any) => {
-          const key = `${season.s}:${episode.ep}`;
-          const alreadyExists = existingEpisodes.has(key);
-          const existingCreatedAt = existingEpisodes.get(key);
+      season: (data.season ?? []).map((season: any) => {
+        const existingSeason = existingSeasons.get(season.s);
+        const existingEpisodes = new Map(
+          existingSeason?.episodes.map((episode) => [episode.ep, episode]) ??
+            [],
+        );
+        const episodeCountIncreased =
+          (season.episodes?.length ?? 0) >
+          (existingSeason?.episodes.length ?? 0);
+        const claimedEpisodeIds = new Set(
+          (season.episodes ?? []).flatMap((episode: any) => {
+            const existingEpisode = existingEpisodes.get(episode.ep);
 
-          return {
-            ...episode,
-            ...(existingCreatedAt
-              ? { createdAt: existingCreatedAt }
-              : alreadyExists
-                ? {}
-                : { createdAt: episode.createdAt ?? new Date() }),
-          };
-        }),
-      })),
+            return existingEpisode ? [String(existingEpisode._id)] : [];
+          }),
+        );
+
+        return {
+          ...season,
+          episodes: (season.episodes ?? []).map((episode: any) => {
+            const existingEpisode = existingEpisodes.get(episode.ep);
+
+            if (existingEpisode) {
+              return {
+                ...episode,
+                _id: existingEpisode._id,
+                createdAt: existingEpisode.createdAt,
+              };
+            }
+
+            if (!episodeCountIncreased) {
+              const replacedEpisode = existingSeason?.episodes.find(
+                (currentEpisode) =>
+                  !claimedEpisodeIds.has(String(currentEpisode._id)),
+              );
+
+              if (replacedEpisode) {
+                claimedEpisodeIds.add(String(replacedEpisode._id));
+
+                return {
+                  ...episode,
+                  _id: replacedEpisode._id,
+                  createdAt: replacedEpisode.createdAt,
+                };
+              }
+            }
+
+            return {
+              ...episode,
+              ...(episodeCountIncreased
+                ? { createdAt: episode.createdAt ?? new Date() }
+                : {}),
+            };
+          }),
+        };
+      }),
     };
   }
 
