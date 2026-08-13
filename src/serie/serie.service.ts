@@ -35,6 +35,11 @@ export class SerieService {
 
     return this.serieModel
       .aggregate<LatestEpisode>([
+        {
+          $match: {
+            news: { $in: ['season', 'episode', 'news'] },
+          },
+        },
         { $unwind: '$season' },
         { $unwind: '$season.episodes' },
         {
