@@ -5,13 +5,42 @@
  * os registros armazenados no MongoDB.
  */
 export const hiddenSeriesTmdbIds = new Set<number>([
-  194766, //verão q mudou a vida dela
-  74577, //end of the fucking world
-  126308, // xogum
-  118906, // universos paralelos
-  4604, // smallville
-  109939, //nossa bandeira é a morte
-  153784, //ta tudo certo
-  89901, //dickinson
-  100757, //outerbanks
+  95557, // Invencível
+  194766, // O Verão Que Mudou A Minha Vida
+  63639, // The Expanse
+  74577, // The End of The F***ing World
+  91363, // What If...?
+  109939, // Nossa Bandeira é a Morte
+  126308, // Xógum
+  75450, // Titãs
+  118906, // Universos Paralelos
+  241259, // Bebê Rena
+  122226, // Eco
+  4604, // Smallville
+  //1412, // Arrow
+  //2692, // Eu, a Patroa e as Crianças
+  153784, // Tá Tudo Certo
+  89901, // Dickinson
+  108545, // O Problema dos 3 Corpos
+  124800, // Amor e Morte
+  202284, // Ninja Kamui
+  87739, // O Gambito da Rainha
+  252, // Todo Mundo Odeia o Chris
+  71446, // La Casa de Papel
+  81356, // Sex Education
+  90228, // Duna
+  //1396, // Breaking Bad
+  76479, // The Boys
+  //62823, // Pânico
+  241454, // O Amor Mora Ao Lado
+  138501, // Agatha Desde Sempre
+  42009, // Black Mirror
+  87689, // Warrior Nun
+  100757, // Outer Banks
+  13916, // Death Note
+  113988, // Dahmer
+  239287, // O Exterminador do Futuro
+  94605, // Arcane
+  194764, // Pinguim
+  37680, // Suits
 ]);
