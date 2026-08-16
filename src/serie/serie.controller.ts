@@ -62,9 +62,7 @@ export class SerieController {
   @Get('/tmdbid/:id')
   @ApiOperation({ summary: 'Buscar série pelo identificador do TMDB' })
   @ApiParam({ name: 'id', type: Number, description: 'Identificador no TMDB.' })
-  findOneByTMDBId(
-    @Param('id') id: number,
-  ): Promise<Serie | null> {
+  findOneByTMDBId(@Param('id') id: number): Promise<Serie | null> {
     return this.serieService.findOne(id);
   }
   @Get('/title/:name')
@@ -76,19 +74,13 @@ export class SerieController {
   @Put(':id')
   @ApiOperation({ summary: 'Atualizar série do catálogo' })
   @ApiParam({ name: 'id', type: Number, description: 'Identificador no TMDB.' })
-  update(
-    @Param('id') id: number,
-    @Body() data: any,
-  ): Promise<Serie | null> {
+  update(@Param('id') id: number, @Body() data: any): Promise<Serie | null> {
     return this.serieService.update(id, data);
   }
   @Post(':id/season')
   @ApiOperation({ summary: 'Adicionar temporada a uma série' })
   @ApiParam({ name: 'id', type: Number, description: 'Identificador no TMDB.' })
-  addSeason(
-    @Param('id') id: number,
-    @Body() data: any,
-  ): Promise<Serie | null> {
+  addSeason(@Param('id') id: number, @Body() data: any): Promise<Serie | null> {
     return this.serieService.addSeason(id, data);
   }
   @Post(':id/season/:season/episode')

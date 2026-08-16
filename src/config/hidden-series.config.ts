@@ -43,4 +43,5 @@ export const hiddenSeriesTmdbIds = new Set<number>([
   94605, // Arcane
   194764, // Pinguim
   37680, // Suits
+  //48891, // brooklyn nine-nine
 ]);
