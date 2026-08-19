@@ -62,7 +62,7 @@ export class MovieController {
   }
   @Get('/mp4')
   @ApiOperation({ summary: 'Listar filmes com arquivos em MP4' })
-  findByMp4Src(): Promise<Movie[]> {
+  findByMp4Src(): Promise<{ count: number; result: Movie[] }> {
     return this.movieService.findByMp4Src();
   }
   @Put(':id')

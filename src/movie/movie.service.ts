@@ -43,7 +43,7 @@ export class MovieService {
       })
       .exec();
   }
-  async findByMp4Src(): Promise<Movie[]> {
+  async findByMp4Src(): Promise<{ count: number; result: Movie[] }> {
     const catalogFilter =
       this.configService.get<string>('NODE_ENV') === 'production'
         ? {
@@ -54,7 +54,9 @@ export class MovieService {
           }
         : { src: /\.mp4/i };
 
-    return this.movieModel.find(catalogFilter).exec();
+    const result = await this.movieModel.find(catalogFilter).exec();
+
+    return { count: result.length, result };
   }
   async update(tmdbId: number, data: Partial<Movie>): Promise<Movie | null> {
     return this.movieModel
