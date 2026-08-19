@@ -60,6 +60,11 @@ export class MovieController {
   findByName(@Param('name') name: string): Promise<Movie[]> {
     return this.movieService.findByName(name);
   }
+  @Get('/mp4')
+  @ApiOperation({ summary: 'Listar filmes com arquivos em MP4' })
+  findByMp4Src(): Promise<Movie[]> {
+    return this.movieService.findByMp4Src();
+  }
   @Put(':id')
   @ApiOperation({ summary: 'Atualizar filme do catálogo' })
   @ApiParam({ name: 'id', type: Number, description: 'Identificador no TMDB.' })
