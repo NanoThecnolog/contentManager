@@ -36,7 +36,7 @@ export const hiddenSeriesTmdbIds = new Set<number>([
   138501, // Agatha Desde Sempre
   42009, // Black Mirror
   87689, // Warrior Nun
-  100757, // Outer Banks
+  //100757, // Outer Banks
   13916, // Death Note
   113988, // Dahmer
   239287, // O Exterminador do Futuro
