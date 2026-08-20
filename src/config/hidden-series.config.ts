@@ -5,7 +5,7 @@
  * os registros armazenados no MongoDB.
  */
 export const hiddenSeriesTmdbIds = new Set<number>([
-  //95557, // Invencível
+  95557, // Invencível
   194766, // O Verão Que Mudou A Minha Vida
   63639, // The Expanse
   //74577, // The End of The F***ing World
