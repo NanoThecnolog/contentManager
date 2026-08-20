@@ -9,6 +9,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { ApiKeyGuard } from './auth/api-key.guard';
 import { ConfigModule } from '@nestjs/config';
 import { MapModule } from './map/map.module';
+import { StreamModule } from './stream/stream.module';
 
 @Module({
   imports: [
@@ -17,7 +18,8 @@ import { MapModule } from './map/map.module';
     MovieModule,
     TrailerModule,
     ConfigModule.forRoot({ isGlobal: true }),
-    MapModule
+    MapModule,
+    StreamModule
   ],
   controllers: [AppController],
   providers: [AppService,
