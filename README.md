@@ -13,7 +13,8 @@ Serviço de conteúdo do ecossistema Flixnext. Centraliza o catálogo mantido no
 - limitar a concorrência, aplicar retentativas seletivas e registrar métricas das consultas externas;
 - remover do cache títulos que deixaram de fazer parte do catálogo;
 - verificar a disponibilidade dos arquivos associados ao conteúdo;
-- receber e transmitir trailers com suporte a requisições parciais.
+- receber e transmitir trailers com suporte a requisições parciais;
+- gerar URLs assinadas (com validade) para reprodução de filmes, episódios e trailers armazenados no bucket Backblaze B2.
 
 ## Fluxo do catálogo
 
@@ -34,6 +35,7 @@ Esse processo permite refletir inclusões e remoções feitas no MongoDB sem arm
 | Séries                 | Catálogo, temporadas, episódios recentes, verificação e enriquecimento pelo TMDB |
 | Mapeamento do catálogo | Lista compacta de identificadores disponíveis                                    |
 | Trailers               | Upload, persistência de referência e streaming de vídeo                          |
+| Streaming              | Assinatura de URLs do Backblaze B2 para filmes, episódios e trailers             |
 
 ## Documentação da API
 
@@ -56,6 +58,7 @@ src/
 ├── mongoSchema/    # Schemas de filmes, séries, temporadas e episódios
 ├── movie/          # Catálogo e integração TMDB de filmes
 ├── serie/          # Catálogo, episódios e integração TMDB de séries
+├── stream/         # Assinatura de URLs do Backblaze B2 para reprodução
 ├── trailer/        # Upload e streaming de trailers
 ├── app.module.ts   # Composição dos módulos
 └── main.ts         # Inicialização HTTP, CORS e Swagger
@@ -74,6 +77,20 @@ src/
 ## Segurança e observabilidade
 
 As rotas internas são protegidas por uma guarda global. O serviço também aplica restrições de origem e cabeçalhos HTTP defensivos. As integrações com o TMDB produzem métricas de cache, latência, retentativas, limites de taxa e falhas para apoiar a análise de desempenho.
+
+## Proteção de URLs de mídia
+
+O conteúdo armazenado no bucket Backblaze B2 é protegido por URLs assinadas com validade. O módulo `stream` gera autorizações de download por prefixo e monta URLs com token efêmero, de modo que o acesso direto (curl, ferramentas de download) fique inviável fora do fluxo autenticado.
+
+Endpoints (protegidos pela chave de serviço):
+
+| Método | Rota                                   | Descrição                        |
+| ------ | -------------------------------------- | -------------------------------- |
+| GET    | `/stream/movie/:id`                    | URL assinada para filme          |
+| GET    | `/stream/serie/:tmdbId/:season/:episode` | URL assinada para episódio     |
+| GET    | `/stream/trailer/:id`                  | URL assinada para trailer        |
+
+Configuração via variáveis de ambiente: `B2_ACCOUNT_ID`, `B2_APPLICATION_KEY_ID`, `B2_APPLICATION_KEY`, `B2_BUCKET_NAME` e `B2_URL_TTL_SECONDS` (padrão 3600 s). Detalhes em `docs/architecture/20-playback-security.md`.
 
 ## Papel no Flixnext
 
